@@ -1,0 +1,47 @@
+#!/bin/bash
+# -*- ruby -*-
+exec bundle exec ruby -x "$0" "$@" >> log
+#!ruby
+require 'dotenv/load'
+require 'mechanize'
+
+def log(*args)
+  puts *args
+  STDERR.puts *args
+end
+
+def new_agent
+  Mechanize.new { |agent| agent.user_agent_alias = 'Mac Firefox' }
+end
+
+agent = new_agent
+page = agent.get 'https://www.starbooks.jp/note/open.php'
+page = page.form_with(id: 'loginForm') do |form|
+  form.field_with(id: 'mail') { |f| f.value = ENV['MAIL'] }
+  form.field_with(id: 'password') { |f| f.value = ENV['PASSWORD'] }
+end.click_button
+
+main = page.at('.cn_area_main')
+q_node = main.at('table[id="question"] .fade')
+exit 1 unless q_node
+
+def answer(quiz, answers)
+  quiz = quiz.strip
+  answers = answers.map(&:strip)
+  log "Q: #{quiz}"
+  agent = new_agent
+  pairs = answers.map.with_index do |answer, index|
+    count = agent
+              .get('http://www.bing.com/search?' + URI.encode_www_form(q: "#{quiz} #{answer}"))
+              .at('.sb_count').text
+              .match(/^[\d,]+/)[0].gsub(/,/, '').to_i
+    log "#{index+1}: #{answer} (#{count})"
+    [index, count]
+  end
+  pairs.max_by(&:last).first
+end
+
+answer_nodes = main.search('[class^="ans_"][class$="_middle"]')
+answer_index = answer(q_node.text, answer_nodes.map(&:text))
+page = agent.click(answer_nodes[answer_index].parent)
+log page.at('.cn_message').text.strip
