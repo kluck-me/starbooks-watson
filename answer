@@ -43,5 +43,6 @@ end
 
 answer_nodes = main.search('[class^="ans_"][class$="_middle"]')
 answer_index = answer(q_node.text, answer_nodes.map(&:text))
+log "(#{answer_index + 1})"
 page = agent.click(answer_nodes[answer_index].parent)
 log page.at('.cn_message').text.strip
