@@ -31,10 +31,8 @@ def answer(quiz, answers)
   log "Q: #{quiz}"
   agent = new_agent
   pairs = answers.map.with_index do |answer, index|
-    count = agent
-              .get('http://www.bing.com/search?' + URI.encode_www_form(q: "#{quiz} #{answer}"))
-              .at('.sb_count').text
-              .match(/^[\d,]+/)[0].gsub(/,/, '').to_i
+    count_node = agent.get('http://www.bing.com/search?' + URI.encode_www_form(q: "#{quiz} #{answer}")).at('.sb_count')
+    count = count_node ? count_node.text.match(/^[\d,]+/)[0].gsub(/,/, '').to_i : 0
     log "#{index+1}: #{answer} (#{count})"
     [index, count]
   end
