@@ -1,9 +1,10 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    domain_name (0.5.20161129)
+    domain_name (0.5.20170404)
       unf (>= 0.0.5, < 1.0.0)
-    dotenv (2.2.0)
+    dotenv (2.2.1)
+    ffi (1.9.18)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     mechanize (2.7.5)
@@ -18,15 +19,18 @@ GEM
     mime-types (3.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2016.0521)
-    mini_portile2 (2.1.0)
+    mini_portile2 (2.2.0)
+    natto (1.1.1)
+      ffi (>= 1.9.0)
     net-http-digest_auth (1.4.1)
     net-http-persistent (2.9.4)
-    nokogiri (1.7.0.1)
-      mini_portile2 (~> 2.1.0)
+    nokogiri (1.8.0)
+      mini_portile2 (~> 2.2.0)
     ntlm-http (0.1.1)
+    textpants (0.1.0)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.2)
+    unf_ext (0.0.7.4)
     webrobots (0.1.2)
 
 PLATFORMS
@@ -35,6 +39,8 @@ PLATFORMS
 DEPENDENCIES
   dotenv
   mechanize
+  natto
+  textpants
 
 BUNDLED WITH
-   1.14.3
+   1.14.6
