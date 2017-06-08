@@ -15,10 +15,19 @@ class Answerer
 
   def think(*args)
     think_(*args) do |opt|
-      {
-        opt: opt,
-        score: calc_score(opt)
-      }
+      result = calc_score(opt)
+      if result.is_a?(Array)
+        {
+          opt: opt,
+          args: result[1..-1],
+          score: result.first
+        }
+      else
+        {
+          opt: opt,
+          score: result
+        }
+      end
     end
   end
 

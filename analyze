@@ -1,0 +1,46 @@
+#!/bin/bash
+# -*- ruby -*-
+exec bundle exec ruby -x "$0" "$@" < log
+#!ruby
+require_relative 'lib/mecab_bing_answerer'
+
+LOGS = []
+last_log = nil
+
+ARGF.each_line do |line|
+  case line
+  when /\AQ: /
+    last_log = { quiz: line.sub(/\AQ: /, '').rstrip }
+    LOGS << last_log
+  when /\A1: /
+    last_log[:opt1] = line.sub(/\A1: /, '').rstrip.sub(/ \(\d+\)\z/, '')
+  when /\A2: /
+    last_log[:opt2] = line.sub(/\A2: /, '').rstrip.sub(/ \(\d+\)\z/, '')
+  when /\A\([12]\)/
+    last_log[:reply] = line.gsub(/\D+/, '').to_i
+  when /\A\u6b63\u89e3\uff01/
+    last_log[:answer] = last_log[:reply]
+  when /\A\u6b8b\u5ff5\uff01/
+    # 1 -> 2, 2 -> 1: 3 - x
+    last_log[:answer] = 3 - last_log[:reply]
+  else
+    raise "Broken #{line.inspect}"
+  end
+end
+
+LOGS.each do |log|
+  STDERR.puts "Q: #{log[:quiz]}"
+  STDERR.puts "1: #{log[:opt1]}#{log[:answer] == 1 ? ' o' : ''}"
+  STDERR.puts "2: #{log[:opt2]}#{log[:answer] == 2 ? ' o' : ''}"
+  res = MecabBingAnswerer.new(log[:quiz])
+          .think(log[:opt1], log[:opt2])
+          .map.with_index { |r, i| STDERR.puts "#{i+1}: #{r[:args] ? r[:args].first : r[:opt]} (#{r[:score]})"; r }
+  log[:new_reply] = MecabBingAnswerer.choose_answer(res) + 1
+  STDERR.puts "old: #{log[:answer] == log[:old_reply] ? 'o' : 'x'}, new: #{log[:answer] == log[:new_reply] ? 'o' : 'x'}"
+  sleep ENV['INTERVAL'].to_i
+end
+
+STDERR.puts ''
+puts format('all: %d', LOGS.size)
+puts format('old: %d%%', 100 * LOGS.count { |log| log[:reply] == log[:answer] } / LOGS.size)
+puts format('new: %d%%', 100 * LOGS.count { |log| log[:new_reply] == log[:answer] } / LOGS.size)
