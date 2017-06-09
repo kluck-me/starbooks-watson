@@ -8,8 +8,8 @@ require_relative 'lib/mecab_bing_answerer'
 agent = MecabBingAnswerer.new_agent
 page = agent.get 'https://www.starbooks.jp/note/open.php'
 page = page.form_with(id: 'loginForm') do |form|
-  form.field_with(id: 'mail') { |f| f.value = ENV['MAIL'] }
-  form.field_with(id: 'password') { |f| f.value = ENV['PASSWORD'] }
+  form.field_with(id: 'mail') { |f| f.value = ENV['SW_MAIL'] }
+  form.field_with(id: 'password') { |f| f.value = ENV['SW_PASSWORD'] }
 end.click_button
 
 main = page.at('.cn_area_main')
