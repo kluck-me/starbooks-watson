@@ -3,9 +3,9 @@
 exec bundle exec ruby -x "$0" "$@" >> log
 #!ruby
 require 'dotenv/load'
-require_relative 'lib/bing_answerer'
+require_relative 'lib/mecab_bing_answerer'
 
-agent = BingAnswerer.new_agent
+agent = MecabBingAnswerer.new_agent
 page = agent.get 'https://www.starbooks.jp/note/open.php'
 page = page.form_with(id: 'loginForm') do |form|
   form.field_with(id: 'mail') { |f| f.value = ENV['MAIL'] }
@@ -16,14 +16,14 @@ main = page.at('.cn_area_main')
 q_node = main.at('table[id="question"] .fade')
 exit false unless q_node
 
-answerer = BingAnswerer.new(q_node.text)
+answerer = MecabBingAnswerer.new(q_node.text)
 puts "Q: #{answerer.quiz}"
 
 answer_nodes = main.search('[class^="ans_"][class$="_middle"]')
 res = answerer
   .think(*answer_nodes.map(&:text))
   .map.with_index { |r, i| puts "#{i+1}: #{r[:opt]} (#{r[:score]})"; r }
-idx = BingAnswerer.choose_answer(res)
+idx = MecabBingAnswerer.choose_answer(res)
 puts "(#{idx+1})"
 
 page = agent.click(answer_nodes[idx].parent)
